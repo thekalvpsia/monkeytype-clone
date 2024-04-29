@@ -7,8 +7,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let sampleText = "The quick brown fox jumps over the lazy dog.";
     let chars = sampleText.split('').map(char => `<span class="char">${char}</span>`);
-    textDisplay.innerHTML = chars.join('');
+    textDisplay.innerHTML = `<span class="cursor initial"></span>` + chars.join('');
     let charSpans = document.querySelectorAll('.char');
+    let initialCursor = document.querySelector('.initial');
 
     let startTime;
     let typedText = "";
@@ -32,6 +33,11 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
         typedText = hiddenInput.value;
+        if (typedText.length === 0) {
+            initialCursor.style.display = 'inline';
+        } else {
+            initialCursor.style.display = 'none';
+        }
         updateTextDisplay();
         calculateResults();
     });
@@ -43,13 +49,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 span.classList.add('typed');
                 span.classList.add(typedText[idx] === sampleText[idx] ? 'correct' : 'incorrect');
             }
-            if (idx === typedText.length - 1) {
-                span.classList.add('cursor');
-            }
         });
         // Remove cursor when all characters are typed
-        if (typedText.length === sampleText.length) {
-            charSpans[charSpans.length - 1].classList.remove('cursor');
+        if (typedText.length > 0 && typedText.length < sampleText.length) {
+            charSpans[typedText.length - 1].classList.add('cursor');
         }
     }
 
