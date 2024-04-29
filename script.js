@@ -30,9 +30,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function updateTextDisplay() {
         charSpans.forEach((span, idx) => {
-            span.classList.remove('typed');
+            span.classList.remove('typed', 'correct', 'incorrect');
             if (idx < typedText.length) {
-                span.classList.add('typed', typedText[idx] === sampleText[idx] ? 'correct' : 'incorrect');
+                span.classList.add('typed');
+                span.classList.add(typedText[idx] === sampleText[idx] ? 'correct' : 'incorrect');
             }
         });
     }
