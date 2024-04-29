@@ -79,3 +79,16 @@ footer p {
         width: 90%;
     }
 }
+
+.cursor {
+    border-right: 2px solid #ffffff;
+    padding-right: 3px;
+    margin-right: -3px;
+    animation: blink 0.7s step-end infinite;
+}
+
+@keyframes blink {
+    50% {
+        border-color: transparent;
+    }
+}

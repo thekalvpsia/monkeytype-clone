@@ -30,12 +30,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function updateTextDisplay() {
         charSpans.forEach((span, idx) => {
-            span.classList.remove('typed', 'correct', 'incorrect');
+            span.classList.remove('typed', 'correct', 'incorrect', 'cursor');
             if (idx < typedText.length) {
                 span.classList.add('typed');
                 span.classList.add(typedText[idx] === sampleText[idx] ? 'correct' : 'incorrect');
             }
+            if (idx === typedText.length - 1) {
+                span.classList.add('cursor');
+            }
         });
+        if (typedText.length === sampleText.length) {
+            charSpans[charSpans.length - 1].classList.remove('cursor');  // Remove cursor at end of text
+        }
     }
 
     function calculateResults() {
