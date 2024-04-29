@@ -55,7 +55,7 @@ textarea {
 }
 
 .char {
-    color: lightgray;
+    color: #555;
 }
 
 .char.typed.correct {
@@ -63,7 +63,7 @@ textarea {
 }
 
 .char.typed.incorrect {
-    color: #ff0000
+    color: #ff6666
 }
 
 .hidden {
