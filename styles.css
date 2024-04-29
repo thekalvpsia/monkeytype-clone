@@ -44,6 +44,26 @@ textarea {
     background-color: #252525;
     border-radius: 8px;
     color: lightgray;
+    font-family: 'Monaco', monospace;
+    font-size: 16px;
+    cursor: text;
+    white-space: pre-wrap;
+}
+
+.text-display .typed {
+    color: #fff;
+}
+
+.char {
+    color: lightgray;
+}
+
+.char.typed.correct {
+    color: #ffffff
+}
+
+.char.typed.incorrect {
+    color: #ff0000
 }
 
 .hidden {

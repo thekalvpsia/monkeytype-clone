@@ -1,47 +1,58 @@
 document.addEventListener('DOMContentLoaded', () => {
     const textDisplay = document.getElementById('text-display');
-    const typingInput = document.getElementById('typing-input');
     const results = document.getElementById('results');
     const speedDisplay = document.getElementById('speed');
     const accuracyDisplay = document.getElementById('accuracy');
 
-    // Sample text to type
-    const sampleText = "The quick brown fox jumps over the lazy dog.";
-    textDisplay.textContent = sampleText;
+    let sampleText = "The quick brown fox jumps over the lazy dog.";
+    let chars = sampleText.split('').map(char => `<span class="char">${char}</span>`);
+    textDisplay.innerHTML = chars.join('');
+    let charSpans = document.querySelectorAll('.char');
 
-    // Start typing test
     let startTime;
-    typingInput.addEventListener('input', () => {
-        const typedText = typingInput.value;
+    let typedText = "";
+
+    // Create and focus a hidden input to capture keystrokes
+    const hiddenInput = document.createElement('textarea');
+    hiddenInput.style.position = 'absolute';
+    hiddenInput.style.opacity = '0';
+    document.body.appendChild(hiddenInput);
+    hiddenInput.focus();
+
+    hiddenInput.addEventListener('input', () => {
         if (!startTime) {
             startTime = new Date();
         }
-
-        // Calculate speed and accuracy
-        const elapsedTime = (new Date() - startTime) / 60000; // time in minutes
-        const wordCount = typedText.split(' ').length;
-        const speed = Math.round(wordCount / elapsedTime);
-        const typedLength = Math.min(typedText.length, sampleText.length);
-        let matchCount = 0;
-        for (let i = 0; i < typedLength; i++) {
-            if (typedText[i] === sampleText[i]) {
-                matchCount++;
-            }
-        }
-        const accuracy = (matchCount / typedLength) * 100;
-
-        // Display results if the entire text has been typed
-        if (typedText === sampleText) {
-            speedDisplay.textContent = speed + ' WPM';
-            accuracyDisplay.textContent = accuracy.toFixed(2) + '%';
-            results.classList.remove('hidden');
-        }
+        typedText = hiddenInput.value;
+        updateTextDisplay();
+        calculateResults();
     });
 
-    // Reset test
-    typingInput.addEventListener('focus', () => {
-        typingInput.value = '';
-        startTime = null;
-        results.classList.add('hidden');
+    function updateTextDisplay() {
+        charSpans.forEach((span, idx) => {
+            span.classList.remove('typed');
+            if (idx < typedText.length) {
+                span.classList.add('typed', typedText[idx] === sampleText[idx] ? 'correct' : 'incorrect');
+            }
+        });
+    }
+
+    function calculateResults() {
+        const elapsedTime = (new Date() - startTime) / 60000; // minutes
+        const wordsTyped = typedText.trim().split(/\s+/).length;
+        const speed = Math.round((wordsTyped / elapsedTime) || 0);
+        const correctChars = typedText.split('').filter((char, idx) => char === sampleText[idx]).length;
+        const accuracy = ((correctChars / sampleText.length) * 100).toFixed(2);
+
+        // Display results if the entire text has been typed
+        if (typedText.length >= sampleText.length) {
+            speedDisplay.textContent = `${speed}`;
+            accuracyDisplay.textContent = `${accuracy}`;
+            results.classList.remove('hidden');
+        }
+    }
+
+    hiddenInput.addEventListener('blur', () => {
+        document.body.removeChild(hiddenInput);
     });
 });
