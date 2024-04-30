@@ -10,9 +10,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let sampleText = shuffleWords(wordBank).join(' ');
     let chars = sampleText.split('').map(char => `<span class="char">${char}</span>`);
-    textDisplay.innerHTML = `<span class="cursor initial"></span>` + chars.join('');
-    let charSpans = document.querySelectorAll('.char');
-    let initialCursor = document.querySelector('.initial');
+    textDisplay.innerHTML = `<span class="cursor"></span>` + chars.join('');
+    let charSpans = document.querySelectorAll('#text-display span');
 
     let startTime;
     let typedText = "";
@@ -67,12 +66,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         typedText = hiddenInput.value;
         
-        if (typedText.length === 0) {
-            initialCursor.style.display = 'inline';
-        } else {
-            initialCursor.style.display = 'none';
-        }
-        
         updateTextDisplay();
         calculateResults();
     });
@@ -80,15 +73,18 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateTextDisplay() {
         charSpans.forEach((span, idx) => {
             span.classList.remove('typed', 'correct', 'incorrect', 'cursor');
-            if (idx < typedText.length) {
+            // Handling typing and cursor visibility
+            if (idx === 0 && typedText.length === 0) {
+                span.classList.add('cursor'); // Show initial cursor only if no text has been typed
+            } else if (idx > 0 && idx <= typedText.length) {
                 span.classList.add('typed');
-                span.classList.add(typedText[idx] === sampleText[idx] ? 'correct' : 'incorrect');
+                span.classList.add(typedText[idx - 1] === sampleText[idx - 1] ? 'correct' : 'incorrect');
             }
         });
-        
-        // Remove cursor when all characters are typed
+
+        // Dynamically add cursor to the last typed character
         if (typedText.length > 0 && typedText.length < sampleText.length) {
-            charSpans[typedText.length - 1].classList.add('cursor');
+            charSpans[typedText.length].classList.add('cursor');  // Move cursor to new position after typing starts
         }
     }
 
