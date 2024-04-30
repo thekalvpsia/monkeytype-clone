@@ -7,8 +7,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const timerDisplay = document.getElementById('timer');
 
     const wordBank = ["the", "of", "to", "and", "a", "in", "is", "it", "you", "that", "he", "was", "for", "on", "are", "with", "as", "his", "they", "be", "at", "one", "have", "this", "from", "or", "had", "by", "hot", "but", "some", "what", "there", "we", "can", "out", "other", "were", "all", "your", "when", "up", "use", "word", "how", "said", "an", "each", "she", "which", "do", "their", "time", "if", "will", "way", "about", "many", "then", "them", "would", "write", "like", "so", "these", "her", "long", "make", "thing", "see", "him", "two", "has", "look", "more", "day", "could", "go", "come", "did", "my", "sound", "no", "most", "number", "who", "over", "know", "water", "than", "call", "first", "people", "may", "down", "side", "been", "now", "find", "any", "new", "work", "part", "take", "get", "place", "made", "live", "where", "after", "back", "little", "only", "round", "man", "year", "came", "show", "every", "good", "me", "give", "our", "under", "name", "very", "through", "just", "form", "much", "great", "think", "say", "help", "low", "line", "before", "turn", "cause", "same", "mean", "differ", "move", "right", "boy", "old", "too", "does", "tell", "sentence", "set", "three", "want", "air", "well", "also", "play", "small", "end", "put", "home", "read", "hand", "port", "large", "spell", "add", "even", "land", "here", "must", "big", "high", "such", "follow", "act", "why", "ask", "men", "change", "went", "light", "kind", "off", "need", "house", "picture", "try", "us", "again", "animal", "point", "mother", "world", "near", "build", "self", "earth", "father"]
+    let currentWords = shuffleWords([...wordBank]);
 
-    let sampleText = shuffleWords(wordBank).join(' ');
+    let visibleWordCount = 5;
+    let sampleText = currentWords.slice(0, visibleWordCount).join(' ');
     let chars = sampleText.split('').map(char => `<span class="char">${char}</span>`);
     textDisplay.innerHTML = `<span class="cursor"></span>` + chars.join('');
     let charSpans = document.querySelectorAll('#text-display span');
@@ -23,12 +25,14 @@ document.addEventListener('DOMContentLoaded', () => {
             const j = Math.floor(Math.random() * (i + 1));
             [words[i], words[j]] = [words[j], words[i]];
         }
-        return words.slice(0, 10);
+        return words;
     }
 
     function startTimer(duration) {
         let timeRemaining = duration;
         timerDisplay.textContent = timeRemaining;
+        timerDisplay.classList.add('fade-in');
+
         timerInterval = setInterval(() => {
             timeRemaining--;
             timerDisplay.textContent = timeRemaining;
@@ -58,52 +62,61 @@ document.addEventListener('DOMContentLoaded', () => {
             startTimer(30);
         }
 
-        if (typedText.length < hiddenInput.value.length) {  // Only consider errors on new input, not on backspace
-            let newCharIndex = hiddenInput.value.length - 1;
-            if (newCharIndex < sampleText.length && hiddenInput.value[newCharIndex] !== sampleText[newCharIndex]) {
-                errorsMade++;
+        const inputValue = hiddenInput.value;
+        if (inputValue.endsWith(' ') && inputValue.trim() === typedText.trim()) { // User completed a word
+            const words = inputValue.trim().split(/\s+/);
+            const lastWord = words[words.length - 1];
+            if (currentWords.includes(lastWord)) { // Valid word from the list
+                // Move first word to the end to simulate continuous text
+                currentWords.push(currentWords.shift());
+                sampleText = currentWords.slice(0, visibleWordCount).join(' ');
+                hiddenInput.value = "";
+                typedText = "";
+                updateTextDisplay();
             }
+        } else {
+            typedText = inputValue;
+            updateTextDisplay();
         }
-        typedText = hiddenInput.value;
-        
-        updateTextDisplay();
-        calculateResults();
     });
 
     function updateTextDisplay() {
-        charSpans.forEach((span, idx) => {
-            span.classList.remove('typed', 'correct', 'incorrect', 'cursor');
-            // Handling typing and cursor visibility
-            if (idx === 0 && typedText.length === 0) {
-                span.classList.add('cursor'); // Show initial cursor only if no text has been typed
-            } else if (idx > 0 && idx <= typedText.length) {
-                span.classList.add('typed');
-                span.classList.add(typedText[idx - 1] === sampleText[idx - 1] ? 'correct' : 'incorrect');
+        // Convert the current sample text into spans for each character
+        chars = sampleText.split('').map(char => `<span class="char">${char}</span>`);
+        textDisplay.innerHTML = chars.join('') + `<span class="cursor"></span>`; // Append cursor at the end
+        charSpans = document.querySelectorAll('#text-display .char'); // Update charSpans to include newly generated spans
+    
+        typedText.split('').forEach((char, idx) => {
+            charSpans[idx].classList.add('typed');
+            if (char === sampleText[idx]) {
+                charSpans[idx].classList.add('correct');
+            } else {
+                charSpans[idx].classList.add('incorrect');
             }
         });
-
-        // Dynamically add cursor to the last typed character
-        if (typedText.length > 0 && typedText.length < sampleText.length) {
-            charSpans[typedText.length].classList.add('cursor');  // Move cursor to new position after typing starts
+    
+        // Ensure the cursor is correctly placed
+        const cursorPosition = typedText.length - 1;
+        if (cursorPosition < charSpans.length) {
+            // Remove existing cursor if any
+            const existingCursor = document.querySelector('.cursor');
+            if (existingCursor) {
+                existingCursor.classList.remove('cursor');
+            }
+            // Add cursor class to the next character in the sequence
+            charSpans[cursorPosition].classList.add('cursor');
         }
     }
 
+    // TODO: Rework logic for calculating results
     function calculateResults() {
         const elapsedTime = (new Date() - startTime) / 60000; // minutes
         const wordsTyped = typedText.trim().split(/\s+/).length;
         const speed = Math.round((wordsTyped / elapsedTime) || 0);
         const accuracy = (100 - (errorsMade / typedText.length) * 100).toFixed(2);
 
-        // Display results if the entire text has been typed
-        if (typedText.length >= sampleText.length) {
-            speedDisplay.textContent = `${speed}`;
-            accuracyDisplay.textContent = `${accuracy}`;
-            errorDisplay.textContent = `${errorsMade}`;
-            results.classList.remove('hidden');
-        }
+        speedDisplay.textContent = `${speed}`;
+        accuracyDisplay.textContent = `${accuracy}`;
+        errorDisplay.textContent = `${errorsMade}`;
     }
-
-    hiddenInput.addEventListener('blur', () => {
-        document.body.removeChild(hiddenInput);
-    });
 });
