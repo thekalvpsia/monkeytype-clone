@@ -85,6 +85,7 @@ footer p {
     padding-right: 3px;
     margin-right: -3px;
     animation: blink 0.7s step-end infinite;
+    transition: all 0.1s ease;
 }
 
 @keyframes blink {
